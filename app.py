@@ -77,6 +77,11 @@ def process_one(image_url):
         outputs = model.get_image_features(**inputs)
     embeddings = outputs.squeeze().cpu().tolist()
 
+    logger.info({
+        "duration": format(time.time() - start_time, '.2f'),
+        "embeddings_length": len(embeddings)
+    })
+
     return {
         "duration": format(time.time() - start_time, '.2f'),
         "embeddings": embeddings
@@ -97,6 +102,11 @@ def process_images(image_url_list):
     with torch.no_grad():
         outputs = model.get_image_features(**inputs)
     embeddings = outputs.squeeze().cpu().tolist()
+
+    logger.info({
+        "duration": format(time.time() - start_time, '.2f'),
+        "embeddings_length": len(embeddings)
+    })
 
     return {
         "duration": format(time.time() - start_time, '.2f'),
