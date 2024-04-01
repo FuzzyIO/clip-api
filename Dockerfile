@@ -1,4 +1,4 @@
-# docker build --platform linux/amd64 -t nojson/clip-api:20240331.2 .
+# docker build --platform linux/amd64 -t nojson/clip-api:20240401.1 .
 
 FROM python:3.8-slim-buster
 
@@ -29,7 +29,8 @@ RUN pip3 install -r requirements.txt
 #     && rm -rf /var/lib/apt/lists/*
 # RUN pip3 install uwsgi
 
-COPY app.py img_01.jpg ./
+COPY app.py ./
+COPY ./s/* ./s/
 CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
 #CMD [ "gunicorn", "-w" , "4", "-b", "0.0.0.0:5000", "app:app"]
 #CMD [ "uwsgi", "--http" , "0.0.0.0:5000", "--module", "app:app"]

@@ -43,10 +43,32 @@ def ping():
 @app.route('/smoke', methods=['GET'])
 def smoke():
     try:
-        image = Image.open('img_01.jpg')
+        start_time = time.time()
+        image = Image.open('s/p_001.jpg')
+        duration_downalod = format(time.time() - start_time, '.2f')
         embedding = process_one(image)
+        embedding['duration_download'] = duration_downalod
         return jsonify(embedding), 200
 
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/smoke10', methods=['GET'])
+def smoke10():
+    try:
+        start_time = time.time()
+        images = []
+        for iter in range(0, 10):
+            image = Image.open('s/p_00{}.jpg'.format((iter % 5) + 1))
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+            images.append(image)
+        duration_downalod = format(time.time() - start_time, '.2f')
+
+        embedding = process_images(images)
+        embedding['duration_download'] = duration_downalod
+        return jsonify(embedding), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -54,9 +76,12 @@ def smoke():
 @app.route('/image', methods=['GET'])
 def image():
     try:
+        start_time = time.time()
         img_url = request.args.get('img_url')
         image = Image.open(requests.get(img_url, stream=True).raw)
+        duration_downalod = format(time.time() - start_time, '.2f')
         embedding = process_one(image)
+        embedding['duration_download'] = duration_downalod
         return jsonify(embedding), 200
 
     except Exception as e:
@@ -70,8 +95,18 @@ def images():
         if not data:
             return jsonify({'error': 'Invalid payload'}), 400
         if 'images' in data:
-            image_embeddings = process_images(data['images'])
-            return jsonify(image_embeddings), 200
+            start_time = time.time()
+            images = []
+            for i in data['images']:
+                image = Image.open(requests.get(i, stream=True).raw)
+                if image.mode != 'RGB':
+                    image = image.convert('RGB')
+                images.append(image)
+            duration_downalod = format(time.time() - start_time, '.2f')
+
+            embedding = process_images(images)
+            embedding['duration_download'] = duration_downalod
+            return jsonify(embedding), 200
         else:
             return jsonify({'message': 'no data.images'}), 200
     except Exception as e:
@@ -91,25 +126,18 @@ def process_one(image):
     embeddings = outputs.squeeze().cpu().tolist()
 
     logger.info({
-        "duration": format(time.time() - start_time, '.2f'),
+        "duration_features": format(time.time() - start_time, '.2f'),
         "embeddings_length": len(embeddings)
     })
 
     return {
-        "duration": format(time.time() - start_time, '.2f'),
+        "duration_features": format(time.time() - start_time, '.2f'),
         "embeddings": embeddings
     }
 
 
-def process_images(image_url_list):
+def process_images(images):
     start_time = time.time()
-    images = []
-    for i in image_url_list:
-        image = Image.open(requests.get(i, stream=True).raw)
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        images.append(image)
-
     inputs = processor(images=images, return_tensors="pt")
     inputs = inputs.to(device)
     with torch.no_grad():
@@ -117,12 +145,12 @@ def process_images(image_url_list):
     embeddings = outputs.squeeze().cpu().tolist()
 
     logger.info({
-        "duration": format(time.time() - start_time, '.2f'),
+        "duration_features": format(time.time() - start_time, '.2f'),
         "embeddings_length": len(embeddings)
     })
 
     return {
-        "duration": format(time.time() - start_time, '.2f'),
+        "duration_features": format(time.time() - start_time, '.2f'),
         "embeddings": embeddings
     }
 
