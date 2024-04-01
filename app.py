@@ -24,7 +24,6 @@ logger = logging.getLogger()
 
 logger.warning("STARTING APP")
 start_time = time.time()
-
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = CLIPModel.from_pretrained(LOCAL_MODEL_DIR)
 model.to(device)
@@ -36,12 +35,28 @@ logger.info("loading model duration: {} for device: {}".format(
 app = Flask(__name__)
 
 
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({"now.now": time.time()}), 200
+
+
+@app.route('/smoke', methods=['GET'])
+def smoke():
+    try:
+        image = Image.open('img_01.jpg')
+        embedding = process_one(image)
+        return jsonify(embedding), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/image', methods=['GET'])
 def image():
     try:
         img_url = request.args.get('img_url')
-        embedding = process_one(img_url)
-
+        image = Image.open(requests.get(img_url, stream=True).raw)
+        embedding = process_one(image)
         return jsonify(embedding), 200
 
     except Exception as e:
@@ -54,20 +69,18 @@ def images():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Invalid payload'}), 400
-
         if 'images' in data:
             image_embeddings = process_images(data['images'])
             return jsonify(image_embeddings), 200
         else:
             return jsonify({'message': 'no data.images'}), 200
-
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
-def process_one(image_url):
+def process_one(image):
     start_time = time.time()
-    image = Image.open(requests.get(image_url, stream=True).raw)
+
     if image.mode != 'RGB':
         image = image.convert('RGB')
 

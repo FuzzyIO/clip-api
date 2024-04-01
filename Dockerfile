@@ -1,4 +1,4 @@
-# docker build --platform linux/amd64 -t nojson/clip-api:20240330.2 .
+# docker build --platform linux/amd64 -t nojson/clip-api:20240331.2 .
 
 FROM python:3.8-slim-buster
 
@@ -19,17 +19,17 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-#### Use the previous cache to save build time
-COPY requirements.txt.add requirements.txt
-RUN pip3 install -r requirements.txt
-RUN pip3 install gunicorn
+#### Use previously build layer to save build time. Optimal for spliting up layers; not for total image size
+# COPY requirements.txt.add requirements.txt
+# RUN pip3 install -r requirements.txt
+#RUN pip3 install gunicorn
 
-RUN apt update && \
-    apt install -y build-essential python-dev \
-    && rm -rf /var/lib/apt/lists/*
-RUN pip3 install uwsgi
+# RUN apt update && \
+#     apt install -y build-essential python-dev \
+#     && rm -rf /var/lib/apt/lists/*
+# RUN pip3 install uwsgi
 
-COPY app.py .
+COPY app.py img_01.jpg ./
 CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
 #CMD [ "gunicorn", "-w" , "4", "-b", "0.0.0.0:5000", "app:app"]
 #CMD [ "uwsgi", "--http" , "0.0.0.0:5000", "--module", "app:app"]
