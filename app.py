@@ -3,6 +3,7 @@ from PIL import Image
 import requests
 import time
 import sys
+import random
 from os import environ as env
 from flask import Flask, request, jsonify
 import json
@@ -44,7 +45,7 @@ def ping():
 def smoke():
     try:
         start_time = time.time()
-        image = Image.open('s/p_001.jpg')
+        image = Image.open('s/p_00{}.jpg'.format(random.randint(1, 5)))
         duration_downalod = format(time.time() - start_time, '.2f')
         embedding = process_one(image)
         embedding['duration_download'] = duration_downalod
