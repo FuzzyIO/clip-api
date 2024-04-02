@@ -27,8 +27,8 @@ logger.warning("STARTING APP")
 start_time = time.time()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = CLIPModel.from_pretrained(LOCAL_MODEL_DIR)
-model.to(device)
 processor = CLIPProcessor.from_pretrained(LOCAL_MODEL_DIR)
+model.to(device)
 
 logger.info("loading model duration: {} for device: {}".format(
     format(time.time() - start_time, '.2f'), device))
@@ -70,6 +70,44 @@ def smoke10():
         embedding = process_images(images)
         embedding['duration_download'] = duration_downalod
         return jsonify(embedding), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/image-text', methods=['GET'])
+def image_text():
+    try:
+        start_time = time.time()
+        img_url = request.args.get('img_url')
+        text_input = request.args.get('text').split("|")
+        image = Image.open(requests.get(img_url, stream=True).raw)
+        duration_downalod = format(time.time() - start_time, '.2f')
+        probs = match_image_text(image, text_input)
+        probs['img_url'] = img_url
+        probs['duration_download'] = duration_downalod
+
+        return jsonify(probs), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/image-image', methods=['GET'])
+def image_image():
+    try:
+        start_time = time.time()
+        img_url1 = request.args.get('img_url1')
+        img_url2 = request.args.get('img_url2')
+        image1 = Image.open(requests.get(img_url1, stream=True).raw)
+        image2 = Image.open(requests.get(img_url2, stream=True).raw)
+        duration_downalod = format(time.time() - start_time, '.2f')
+
+        probs = match_image_image(image1, image2)
+        probs['duration_download'] = duration_downalod
+        probs['img_url1'] = img_url1
+        probs['img_url2'] = img_url2
+        return jsonify(probs), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -134,6 +172,69 @@ def process_one(image):
     return {
         "duration_features": format(time.time() - start_time, '.2f'),
         "embeddings": embeddings
+    }
+
+
+def match_image_text(image, text_input):
+    start_time = time.time()
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
+
+    inputs = processor(text=text_input,
+                       images=image,
+                       return_tensors="pt",
+                       padding=True)
+    outputs = model(**inputs)
+
+    logits_per_image = outputs.logits_per_image
+    probs = logits_per_image.softmax(dim=1).tolist()[0]
+    sims = {}
+    for i, t in enumerate(text_input, start=0):
+        sims[t] = probs[i]
+
+    logger.info({
+        "duration_features": format(time.time() - start_time, '.2f'),
+        "probs": sims
+    })
+
+    return {
+        "duration_features": format(time.time() - start_time, '.2f'),
+        "probs": sims
+    }
+
+
+def match_image_image(image1, image2):
+    start_time = time.time()
+    if image1.mode != 'RGB':
+        image1 = image1.convert('RGB')
+    if image2.mode != 'RGB':
+        image2 = image2.convert('RGB')
+
+    input1 = processor(images=[image1], return_tensors="pt")
+    input2 = processor(images=[image2], return_tensors="pt")
+    input1 = input1.to(device)
+    input2 = input2.to(device)
+
+    # Calculate the embeddings for the images using the CLIP model
+    with torch.no_grad():
+        embedding_a = model.get_image_features(**input1)
+        embedding_b = model.get_image_features(**input2)
+
+    # Calculate the cosine similarity between the embeddings
+    similarity_score = torch.nn.functional.cosine_similarity(
+        embedding_a, embedding_b)
+
+    # Print the similarity score
+    print('Similarity score:', similarity_score.item())
+
+    logger.info({
+        "duration_features": format(time.time() - start_time, '.2f'),
+        "probs": similarity_score.item()
+    })
+
+    return {
+        "duration_features": format(time.time() - start_time, '.2f'),
+        "probs": similarity_score.item()
     }
 
 

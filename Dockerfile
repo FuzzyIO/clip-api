@@ -1,4 +1,4 @@
-# docker build --platform linux/amd64 -t nojson/clip-api:20240401.1 .
+# docker build --platform linux/amd64 -t nojson/clip-api:20240402.1 .
 
 FROM python:3.8-slim-buster
 

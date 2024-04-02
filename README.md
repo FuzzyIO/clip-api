@@ -9,10 +9,10 @@ There are a few testing endpoints
 * GET localhost:5000/smoke   [generate embedding for 1 locally stored image]
 * GET localhost:5000/smoke10 [generate embedding for 10 locally stored images]
 
-To process single image
+#### Embedding for single image
 * GET localhost:5000/image?img_url={image_url}
 
-To process multiple images
+#### Embedding for multiple images
 * POST localhost:5000/images
 ```
 {"images": [
@@ -21,6 +21,21 @@ To process multiple images
 ]}
 ```
 
+#### Image to Image similarity score
+* GET localhost:5003/image-image?img_url1={image_url1}&img_url2={image_url2}
+
+```
+http://localhost:5000/image-image?img_url1=https://www.alleycat.org/wp-content/uploads/2019/03/FELV-cat.jpg&img_url2=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1280px-Cat03.jpg
+```
+
+
+#### Image to Text similarity score
+* GET localhost:5000/image-text?text={text with | as delim, space is allowed}&img_url={image_url}
+Example of text: `festival|evening|frog|water bottle|shirt|pants`
+
+```
+http://localhost:5000/image-text?text=dog|cat|frog|water bottle|shirt|pants&img_url=https://cdn.shopify.com/s/files/1/0277/9519/3890/files/436-4367467_dog-cat-cute-animal-stickers-labs-and-cats_480x480.png
+```
 
 ## Develop
 ```
@@ -35,7 +50,7 @@ python -m flask run --host=0.0.0.0
 ```
 docker run --name clip -d \
   --restart unless-stopped \
-  nojson/clip-api:20240401.1
+  nojson/clip-api:20240402.1
 ```
 ### Map to host network (for GCP VM's)
 `--network host \`
@@ -47,7 +62,7 @@ Example:
 docker run --name clip -d \
   --restart unless-stopped \
   -p 80:5000 \
-  nojson/clip-api:20240401.1
+  nojson/clip-api:20240402.1
 ```
 
 ### Run Flask using customized parameter
@@ -57,7 +72,7 @@ Example:
 docker run --name clip -d \
   --restart unless-stopped \
   --network host \
-  nojson/clip-api:20240401.1 python3 -m flask run --host=0.0.0.0 --port 80
+  nojson/clip-api:20240402.1 python3 -m flask run --host=0.0.0.0 --port 80
 ```
 
 ## Considerations
