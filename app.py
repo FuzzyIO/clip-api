@@ -1,3 +1,5 @@
+from sentence_transformers import SentenceTransformer
+from sentence_transformers.util import cos_sim
 import torch
 from PIL import Image
 import requests
@@ -29,8 +31,15 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 model = CLIPModel.from_pretrained(LOCAL_MODEL_DIR)
 processor = CLIPProcessor.from_pretrained(LOCAL_MODEL_DIR)
 model.to(device)
+logger.info("loading image model duration: {} for device: {}".format(
+    format(time.time() - start_time, '.2f'), device))
 
-logger.info("loading model duration: {} for device: {}".format(
+start_time = time.time()
+textModelPath = '/opt/models/all-mpnet-base-v2'
+# textModel = SentenceTransformer('all-mpnet-base-v2')
+# textModel.save(textModelPath)
+textModel = SentenceTransformer(textModelPath)
+logger.info("loading text model duration: {} for device: {}".format(
     format(time.time() - start_time, '.2f'), device))
 
 app = Flask(__name__)
@@ -173,6 +182,52 @@ def process_one(image):
         "duration_features": format(time.time() - start_time, '.2f'),
         "embeddings": embeddings
     }
+
+
+@app.route('/text-sim', methods=['GET'])
+def text_sim():
+    try:
+        start_time = time.time()
+        text_input = request.args.get('text').split("|")
+        if len(text_input) < 2:
+            return jsonify({
+                "message":
+                "minimal text array must be 2. input is {}".format(
+                    len(text_input))
+            }), 200
+        text_embeddings = textModel.encode(text_input).tolist()
+        duration_embedding = format(time.time() - start_time, '.2f')
+
+        cos_sims = cos_sim(text_embeddings[0], text_embeddings[1:]).tolist()[0]
+        sims = {}
+        for index in range(len(cos_sims)):
+            sims[text_input[index + 1]] = cos_sims[index]
+
+        rs = {
+            "duration_embedding": duration_embedding,
+            "sim_compare_to": text_input[0],
+            "sim_scores": sims
+        }
+        return jsonify(rs), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/text', methods=['GET'])
+def text():
+    try:
+        start_time = time.time()
+        text_input = request.args.get('text')
+        text_embeddings = textModel.encode([text_input]).tolist()[0]
+
+        rs = {
+            "duration_features": format(time.time() - start_time, '.2f'),
+            "embeddings": text_embeddings
+        }
+        return jsonify(rs), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 def match_image_text(image, text_input):

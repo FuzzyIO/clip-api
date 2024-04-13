@@ -37,6 +37,28 @@ Example of text: `festival|evening|frog|water bottle|shirt|pants`
 http://localhost:5000/image-text?text=dog|cat|frog|water bottle|shirt|pants&img_url=https://cdn.shopify.com/s/files/1/0277/9519/3890/files/436-4367467_dog-cat-cute-animal-stickers-labs-and-cats_480x480.png
 ```
 
+#### Embedding for sentense
+* GET localhost:5000/text?text=one text sentense
+
+#### Similarity of sentenses
+* GET localhost:5000/text-sim?text=a list of text sentenses|using pipe as delim|it will calculate cos_sim|to the first sentense
+
+```
+/text-sim?text=it's going to rain tomorrow|should i wear a jacket|umbrella|cold weather|boots
+
+{
+    "duration_embedding": "0.46",
+    "sim_compare_to": "it's going to rain tomorrow",
+    "sim_scores": {
+        "boots": 0.2046470046043396,
+        "cold weather": 0.31461989879608154,
+        "should i wear a jacket": 0.3708042800426483,
+        "umbrella": 0.4592152535915375
+    }
+}
+```
+
+
 ## Develop
 ```
 pip install -r requirements.txt
@@ -50,7 +72,7 @@ python -m flask run --host=0.0.0.0
 ```
 docker run --name clip -d \
   --restart unless-stopped \
-  nojson/clip-api:20240402.1
+  nojson/clip-api:20240413.1
 ```
 ### Map to host network (for GCP VM's)
 `--network host \`
@@ -62,7 +84,7 @@ Example:
 docker run --name clip -d \
   --restart unless-stopped \
   -p 80:5000 \
-  nojson/clip-api:20240402.1
+  nojson/clip-api:20240413.1
 ```
 
 ### Run Flask using customized parameter
@@ -72,7 +94,7 @@ Example:
 docker run --name clip -d \
   --restart unless-stopped \
   --network host \
-  nojson/clip-api:20240402.1 python3 -m flask run --host=0.0.0.0 --port 80
+  nojson/clip-api:20240413.1 python3 -m flask run --host=0.0.0.0 --port 80
 ```
 
 ## Considerations

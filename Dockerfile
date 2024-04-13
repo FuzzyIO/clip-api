@@ -1,4 +1,4 @@
-# docker build --platform linux/amd64 -t nojson/clip-api:20240402.1 .
+# docker build --platform linux/amd64 -t nojson/clip-api:20240413.1 .
 
 FROM python:3.8-slim-buster
 
@@ -28,6 +28,10 @@ RUN pip3 install -r requirements.txt
 #     apt install -y build-essential python-dev \
 #     && rm -rf /var/lib/apt/lists/*
 # RUN pip3 install uwsgi
+
+# 2024-04-13 Addition for Text
+RUN pip3 install -U sentence-transformers
+RUN mkdir -p /opt/models && cd /opt/models && git clone https://huggingface.co/sentence-transformers/all-mpnet-base-v2 && rm -rf /opt/models/all-mpnet-base-v2/pytorch_model.bin
 
 COPY app.py ./
 COPY ./s/* ./s/
