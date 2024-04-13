@@ -47,14 +47,26 @@ http://localhost:5000/image-text?text=dog|cat|frog|water bottle|shirt|pants&img_
 /text-sim?text=it's going to rain tomorrow|should i wear a jacket|umbrella|cold weather|boots
 
 {
-    "duration_embedding": "0.46",
+    "duration_embedding": "0.15",
     "sim_compare_to": "it's going to rain tomorrow",
-    "sim_scores": {
-        "boots": 0.2046470046043396,
-        "cold weather": 0.31461989879608154,
-        "should i wear a jacket": 0.3708042800426483,
-        "umbrella": 0.4592152535915375
-    }
+    "sim_scores": [
+        {
+            "score": 0.37080439925193787,
+            "text": "should i wear a jacket"
+        },
+        {
+            "score": 0.4592152535915375,
+            "text": "umbrella"
+        },
+        {
+            "score": 0.3146200180053711,
+            "text": "cold weather"
+        },
+        {
+            "score": 0.20464709401130676,
+            "text": "boots"
+        }
+    ]
 }
 ```
 

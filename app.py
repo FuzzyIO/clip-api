@@ -199,9 +199,10 @@ def text_sim():
         duration_embedding = format(time.time() - start_time, '.2f')
 
         cos_sims = cos_sim(text_embeddings[0], text_embeddings[1:]).tolist()[0]
-        sims = {}
+        sims = []
         for index in range(len(cos_sims)):
-            sims[text_input[index + 1]] = cos_sims[index]
+            sim = {"text": text_input[index + 1], "score": cos_sims[index]}
+            sims.append(sim)
 
         rs = {
             "duration_embedding": duration_embedding,
