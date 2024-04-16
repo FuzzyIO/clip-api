@@ -1,7 +1,8 @@
 # clip API
 
-API Wrapper of the `clip-vit-base-patch32` model to generate image embeddings at scale
-
+API Wrapper Playground of
+* [`clip-vit-base-patch32` model](https://huggingface.co/openai/clip-vit-base-patch32) to generate image embeddings
+* [`all-mpnet-base-v2` model](https://huggingface.co/sentence-transformers/all-mpnet-base-v2) model to generate text embeddings
 
 ## Usage
 There are a few testing endpoints
@@ -37,10 +38,10 @@ Example of text: `festival|evening|frog|water bottle|shirt|pants`
 http://localhost:5000/image-text?text=dog|cat|frog|water bottle|shirt|pants&img_url=https://cdn.shopify.com/s/files/1/0277/9519/3890/files/436-4367467_dog-cat-cute-animal-stickers-labs-and-cats_480x480.png
 ```
 
-#### Embedding for sentense
+#### TEXT embedding for sentense
 * GET localhost:5000/text?text=one text sentense
 
-#### Similarity of sentenses
+#### TEXT similarity of sentenses
 * GET localhost:5000/text-sim?text=a list of text sentenses|using pipe as delim|it will calculate cos_sim|to the first sentense
 
 ```
